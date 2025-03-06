@@ -6,57 +6,45 @@ ship_joueur = 0
 ship_robot : int = randint(1,4)
 grille_joueur = [1,2,3,4]
 grille_robot = [1,2,3,4]
-# Pour suivre les tirs du joueur et du robot
 tirs_joueur = []
 tirs_robot = []
 turn = 0
 
 def clear_console():
-    """Efface la console"""
     os.system('cls' if os.name == 'nt' else 'clear')
+# cette fonction permet d'effacer la console
 
 def afficher_grille(grille, tirs=None, ship=None, masquer_bateau=True):
-    """
-    Affiche une grille 2x2
-    grille: liste des cases disponibles
-    tirs: liste des tirs effectués
-    ship: position du bateau
-    masquer_bateau: si True, ne pas afficher le bateau
-    """
+
     print("┌───┬───┐")
     print(f"│ {'1' if 1 in grille else ' '} │ {'2' if 2 in grille else ' '} │")
     print("├───┼───┤")
     print(f"│ {'3' if 3 in grille else ' '} │ {'4' if 4 in grille else ' '} │")
     print("└───┴───┘")
+# cette fonction permet d'afficher la grille 2x2 de chaque joueur, en attribuant chaque case à son numéro
 
 def afficher_grille_avec_symboles(grille, tirs, ship, masquer_bateau=True):
-    """
-    Affiche une grille 2x2 avec des symboles
-    - 'O' pour les cases vides non touchées
-    - 'X' pour les tirs ratés
-    - '#' pour un bateau (si masquer_bateau=False)
-    - '!' pour un bateau touché
-    """
-    # Créer un tableau de symboles pour la grille
+  
     symboles = {}
     for i in range(1, 5):
         if i in tirs and i == ship:
-            symboles[i] = '!'  # Bateau touché
+            symboles[i] = '$'  # Le bateau est touché
         elif i in tirs:
-            symboles[i] = 'X'  # Tir raté
+            symboles[i] = 'X'  # Le tir est raté
         elif i == ship and not masquer_bateau:
-            symboles[i] = '#'  # Bateau
+            symboles[i] = '#'  # Indique notre bateau sur notre grille
         else:
-            symboles[i] = 'O'  # Case vide
+            symboles[i] = '~'  # Case vide = eau
     
     print("┌───┬───┐")
     print(f"│ {symboles[1]} │ {symboles[2]} │")
     print("├───┼───┤")
     print(f"│ {symboles[3]} │ {symboles[4]} │")
     print("└───┴───┘")
+# Cette fonction permet d'afficher les grilles de chacun avec des symboles, selon l'état du jeu
 
 def afficher_jeu():
-    """Affiche l'état complet du jeu"""
+    
     clear_console()
     print("=== BATAILLE NAVALE 2x2 ===\n")
     
@@ -66,15 +54,16 @@ def afficher_jeu():
     print("\nVotre Grille:")
     afficher_grille_avec_symboles(grille_joueur, tirs_robot, ship_joueur, masquer_bateau=False)
     
-    print("\nLégende: O = eau, X = tir raté, # = votre bateau, ! = bateau touché")
+    print("\nLégende:  ~ = eau, X = tir raté, # = votre bateau, $ = bateau touché")
     print(f"Tour: {turn + 1}, {'Joueur' if turn % 2 == 0 else 'Robot'} joue")
     print("---------------------------")
+# Cette fonction permet d'afficher l'état complet du jeu, en tout temps
 
 def case_joueur():
     while True:
         try:
             afficher_jeu()
-            case_choisie = int(input("Joueur, choisissez sur quelle case vous cachez votre bateau [1|2|3|4]: "))
+            case_choisie = int(input(f"Joueur, choisissez sur quelle case vous cachez votre bateau [1|2|3|4]: "))
             if case_choisie in grille_joueur:
                 return case_choisie
             else:
@@ -83,12 +72,14 @@ def case_joueur():
         except ValueError:
             print("Erreur : Veuillez entrer un nombre entier.")
             input("Appuyez sur Entrée pour continuer...")
+# Cette fonction permet de valider si le choix du joueur est conforme ou non + de lui demander d'inscrire un numéro
 
 def joueur_play():
+
     while True:
         try:
             afficher_jeu()
-            choix = int(input(f"Joueur, choisissez sur quelle case votre missile va être lancé [1-4]: "))
+            choix = int(input(f"Joueur, choisissez sur quelle case votre missile va être lancé {grille_robot}: "))
             if choix in grille_robot:
                 tirs_joueur.append(choix)
                 if choix == ship_robot:
@@ -98,7 +89,7 @@ def joueur_play():
                 else:
                     grille_robot.remove(choix)
                     afficher_jeu()
-                    print("Joueur sur {choix}, c'est raté")
+                    print(f"Joueur sur {choix}, c'est raté")
                     input("Appuyez sur Entrée pour continuer...")
                     return False
             else:
@@ -107,6 +98,7 @@ def joueur_play():
         except ValueError:
             print("Erreur : Veuillez entrer un nombre entier.")
             input("Appuyez sur Entrée pour continuer...")
+# Cette fonction permet de valider l'entrée du joueur, si elle  est conforme ou non (int) + selon le choix soit = gagné --> fin , soit= raté --> jeu continue
 
 def robot_play():
     afficher_jeu()
@@ -127,6 +119,8 @@ def robot_play():
         print(f"Robot a tirer sur {choix}, c'est raté")
         input("Appuyez sur Entrée pour continuer...")
         return False
+# Cette fonction permet au robot de choisir sa case, de savoir si gagné ou non, cf: fonction joueur, même principe
+
 
 # Programme principal
 print("Jeu 2 par 2 de la bataille navale \n ------------------------------------------")
@@ -144,3 +138,4 @@ while True:
         break
     else:
         turn += 1
+# Cette boucle permet l'alternance du tour entre les 2 joueurs et la fin du jeu ou le changement de tour
