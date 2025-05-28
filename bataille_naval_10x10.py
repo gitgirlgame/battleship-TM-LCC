@@ -16,8 +16,8 @@ grille_joueur = ["A1","A2","A3","A4","A5","A6","A7","A8","A9","A10",
 
 grille_robot = grille_joueur.copy()
 ship_list = grille_joueur.copy()
-ship_joueur = 0
-ship_robot = random.choice(ship_list)
+ships_joueur = []
+ships_robot = []
 tirs_joueur = []
 tirs_robot = []
 turn = 0
@@ -26,7 +26,7 @@ def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 # cette fonction permet d'effacer la console
 
-def afficher_grille(grille, tirs=None, ship=None, masquer_bateau=True):
+def afficher_grille(grille, tirs=None, ships=None, masquer_bateau=True):
 
      
     # Ajout des numéros de colonnes en haut
@@ -53,7 +53,7 @@ def afficher_grille(grille, tirs=None, ship=None, masquer_bateau=True):
             print("  └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘")
 # cette fonction permet d'afficher la grille 10X10 de chaque joueur, avec les coordonnées des cases
 
-def afficher_grille_avec_symboles(grille, tirs, ship, masquer_bateau=True):
+def afficher_grille_avec_symboles(grille, tirs, ships, masquer_bateau=True):
   
     print("                                           ")
     print("    1   2   3   4   5   6   7   8   9  10 ")
@@ -67,11 +67,11 @@ def afficher_grille_avec_symboles(grille, tirs, ship, masquer_bateau=True):
             case = f"{ligne}{col}"
             
             # Déterminer le symbole à afficher pour cette case
-            if case in tirs and case == ship:
+            if case in tirs and case in ships:
                 symbole = "$"  # Bateau touché
             elif case in tirs:
                 symbole = "X"  # Tir raté
-            elif case == ship and not masquer_bateau:
+            elif case in ships_joueur and not masquer_bateau:
                 symbole = "#"  # Bateau (visible uniquement sur sa propre grille)
             else:
                 symbole = "~"  # Eau
@@ -89,33 +89,56 @@ def afficher_grille_avec_symboles(grille, tirs, ship, masquer_bateau=True):
 def afficher_jeu():
     
     clear_console()
-    print("=== BATAILLE NAVALE 2x2 ===\n")
+    print("=== BATAILLE NAVALE 10x10 ===\n")
     
     print("Grille du Robot (adversaire):")
-    afficher_grille_avec_symboles(grille_robot, tirs_joueur, ship_robot, masquer_bateau=True)
+    afficher_grille_avec_symboles(grille_robot, tirs_joueur, ships_robot, masquer_bateau=True)
     
     print("\nVotre Grille:")
-    afficher_grille_avec_symboles(grille_joueur, tirs_robot, ship_joueur, masquer_bateau=False)
+    afficher_grille_avec_symboles(grille_joueur, tirs_robot, ships_joueur, masquer_bateau=False)
     
     print("\nLégende:  ~ = eau, X = tir raté, # = votre bateau, $ = bateau touché")
     print(f"Tour: {turn + 1}, {'Joueur' if turn % 2 == 0 else 'Robot'} joue")
     print("---------------------------")
 # Cette fonction permet d'afficher l'état complet du jeu, en tout temps
 
-def case_joueur():
-    while True:
-        try:
-            afficher_jeu()
-            case_choisie = input(f"Joueur, choisissez sur quelle case vous cachez votre bateau [A1-J10]: ")
-            if case_choisie in grille_joueur:
-                return case_choisie
-            else:
-                print("Attention, veuillez insérer une case valide !")
+def place_ships_joueur():
+    
+    ships_joueur.clear()
+    
+    for x in range(2) :
+        while True:
+            try:
+                afficher_jeu()
+                print(f"Placement du bateau {x+1}/2")
+                case_choisie = input(f"Choissisez sur quelle case vous voulez placer votre bateau {x+1} [A1-J10]")
+                
+                if case_choisie in grille_joueur and case_choisie not in ships_joueur:
+                    ships_joueur.append(case_choisie)
+                    break
+                
+                elif case_choisie in ships_joueur:
+                    print("Attention cette case est déja occupée par un de vos bateaux")
+                    input("Appuyez sur Entrée pour continuer...")
+                    
+                else:
+                    print("Attention, veuillez insérer une case valide !")
+                    input("Appuyez sur Entrée pour continuer...")
+                    
+            except ValueError:
+                print("Erreur : Veuillez une lettre majuscule suivant d'un chiffre (1-10).")
                 input("Appuyez sur Entrée pour continuer...")
-        except ValueError:
-            print("Erreur : Veuillez une lettre majuscule suivant d'un chiffre (1-10).")
-            input("Appuyez sur Entrée pour continuer...")
 # Cette fonction permet de valider si le choix du joueur est conforme ou non + de lui demander d'inscrire un numéro
+
+def place_ships_robot():
+    
+    ships_robot.clear()
+    
+    while len(ships_robot) < 2:
+        case_robot = random.choice(ship_list)
+        if case_robot not in ships_robot :
+            ships_robot.append(case_robot)
+    
 
 def joueur_play():
 
@@ -125,10 +148,16 @@ def joueur_play():
             choix = input(f"Joueur, choisissez sur quelle case votre missile va être lancé [A1-J10]: ")
             if choix in grille_robot:
                 tirs_joueur.append(choix)
-                if choix == ship_robot:
+                if choix == ships_robot:
                     afficher_jeu()
-                    print("Touché, joueur a gagné !")
-                    return True
+                    print("Touché !")
+                    if all(ship in tirs_joueur for ship in ships_robot):
+                        print("Joueur, vous remportez la partie, tous les bateaux de robot sont coulés !")
+                        return True
+                    else:
+                        input("Appuyez sur Entrée pour continuer...")
+                        return False
+                        
                 else:
                     grille_robot.remove(choix)
                     afficher_jeu()
@@ -152,10 +181,12 @@ def robot_play():
     tirs_robot.append(choix)
     print(f"Robot a choisi la case {choix}")
     
-    if choix == ship_joueur:
+    if choix in ships_joueur:
         afficher_jeu()
-        print("Touché, Robot a gagné !")
-        return True
+        print("Touché !")
+        if all(ship in tirs_robot for ship in ships_robot):
+            print("Robot à gagner la partie, tous vous bateaux sont coulés !")
+            return True
     else:
         grille_joueur.remove(choix)
         afficher_jeu()
@@ -167,7 +198,9 @@ def robot_play():
 
 # Programme principal
 print("Jeu 2 par 2 de la bataille navale \n ------------------------------------------")
-ship_joueur = case_joueur()
+
+place_ships_joueur()
+place_ships_robot()
 
 while True:
     if turn % 2 == 0:
