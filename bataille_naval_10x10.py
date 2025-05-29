@@ -106,11 +106,11 @@ def place_ships_joueur():
     
     ships_joueur.clear()
     
-    for x in range(2) :
+    for x in range(5) :
         while True:
             try:
                 afficher_jeu()
-                print(f"Placement du bateau {x+1}/2")
+                print(f"Placement du bateau {x+1}/5")
                 case_choisie = input(f"Choissisez sur quelle case vous voulez placer votre bateau {x+1} [A1-J10]")
                 
                 if case_choisie in grille_joueur and case_choisie not in ships_joueur:
@@ -134,10 +134,11 @@ def place_ships_robot():
     
     ships_robot.clear()
     
-    while len(ships_robot) < 2:
+    while len(ships_robot) < 5:
         case_robot = random.choice(ship_list)
         if case_robot not in ships_robot :
             ships_robot.append(case_robot)
+        
     
 
 def joueur_play():
@@ -148,12 +149,14 @@ def joueur_play():
             choix = input(f"Joueur, choisissez sur quelle case votre missile va être lancé [A1-J10]: ")
             if choix in grille_robot:
                 tirs_joueur.append(choix)
-                if choix == ships_robot:
+                if choix in ships_robot:
                     afficher_jeu()
                     print("Touché !")
+                    input(f"Appuyez sur Entrée pour continuer...")
                     if all(ship in tirs_joueur for ship in ships_robot):
                         print("Joueur, vous remportez la partie, tous les bateaux de robot sont coulés !")
                         return True
+                                          
                     else:
                         input("Appuyez sur Entrée pour continuer...")
                         return False
@@ -184,6 +187,7 @@ def robot_play():
     if choix in ships_joueur:
         afficher_jeu()
         print("Touché !")
+        input(f"Appuyez sur entrée pour continuer...")
         if all(ship in tirs_robot for ship in ships_robot):
             print("Robot à gagner la partie, tous vous bateaux sont coulés !")
             return True
@@ -201,6 +205,7 @@ print("Jeu 2 par 2 de la bataille navale \n ------------------------------------
 
 place_ships_joueur()
 place_ships_robot()
+
 
 while True:
     if turn % 2 == 0:
