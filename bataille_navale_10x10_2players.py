@@ -1,7 +1,6 @@
 from random import randint
 import random
 import os
-from bataille_naval_10x10 import afficher_jeu
 from ship import Ship, create_fleet
 
 
@@ -18,19 +17,19 @@ grille_joueur1 = ["A1","A2","A3","A4","A5","A6","A7","A8","A9","A10",
 
 grille_joueur2 = grille_joueur1.copy()
 ship_list = grille_joueur1.copy()
+grille_robot= grille_joueur1.copy()
+grille_joueur = grille_joueur1.copy()
 ships_joueur1= []
 ships_joueur2 = []
 fleet_joueur1 = create_fleet()
 fleet_joueur2 = create_fleet()
-tirs_joueur1 = []
-tirs_joueur2 = []
-turn = 0
-grille_robot= []
-grille_joueur = []
-tirs_joueur = []
-tirs_robot = []
 fleet_robot = create_fleet()
 fleet_joueur = create_fleet()
+tirs_joueur1 = []
+tirs_joueur2 = []
+tirs_joueur = []
+tirs_robot = []
+turn = 0
 
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -118,9 +117,6 @@ def afficher_jeu_1():
 # Cette fonction permet d'afficher l'état complet du jeu, en tout temps
 
 def afficher_jeu_2():
-    # Initialisation des grilles pour le joueur et le robot
-    grille_joueur = grille_joueur1.copy()
-    grille_robot = grille_joueur2.copy()
     
     print("Grille du Robot (adversaire):")
     afficher_grille_avec_symboles(grille_robot, tirs_joueur, fleet_robot, masquer_bateau=True)
@@ -144,26 +140,27 @@ def afficher_type_jeu():
     if choix == "1":
         print("Vous avez choisi le mode 2 joueurs.")
         input("Appuyez sur Entrée pour continuer...")
-        afficher_jeu_1()
         game_start_1()
+        
     elif choix == "2":
         print("Vous avez choisi le mode Robot vs Joueur.")
         input("Appuyez sur Entrée pour continuer...")
-        afficher_jeu_2()
         game_start_2()
+        
     else:
         print("Choix invalide. Veuillez réessayer.")
         input("Appuyez sur Entrée pour continuer...")
         afficher_type_jeu()
-    
-    clear
+# Cette fonction permet de choisir le type de jeu, soit 2 joueurs, soit robot vs joueur
+
+
 def place_ships_joueur1():
     
     for i, ship in enumerate(fleet_joueur1):
         placed = False
         while not placed:
             try:
-                afficher_jeu()
+                afficher_jeu_1()
                 print(f"Placement du {ship.name} ({ship.size} cases)")
                 print(f"Bateau {i+1}/5")
                 case_choisie = input(f"Joueur 1, choisissez la case de départ pour votre {ship.name} [A1-J10]: ")
@@ -183,6 +180,84 @@ def place_ships_joueur1():
                 ship.place(case_choisie, orientation)
                 
                 if ship.is_valid_placement(grille_joueur1, fleet_joueur1[:i]):
+                    placed = True
+                else:
+                    print("Placement invalide (hors grille ou chevauchement)")
+                    input("Appuyez sur Entrée pour continuer...")
+                    
+            except Exception as e:
+                print("Erreur : Veuillez réessayer.")
+                input("Appuyez sur Entrée pour continuer...")
+                
+# Cette fonction permet de valider si le choix du joueur est conforme ou non + de lui demander d'inscrire un numéro
+
+        
+
+def place_ships_joueur2():
+    
+    for i, ship in enumerate(fleet_joueur2):
+        placed = False
+        while not placed:
+            try:
+                afficher_jeu_1()
+                print(f"Placement du {ship.name} ({ship.size} cases)")
+                print(f"Bateau {i+1}/5")
+                case_choisie = input(f"Joueur 2, choisissez la case de départ pour votre {ship.name} [A1-J10]: ")
+                
+                if case_choisie not in grille_joueur2:
+                    print("Attention, veuillez insérer une case valide !")
+                    input("Appuyez sur Entrée pour continuer...")
+                    continue
+                
+                orientation = input("Orientation (H)orizontale ou (V)erticale: ").upper()
+                if orientation not in ['H', 'V']:
+                    print("Veuillez entrer H ou V")
+                    input("Appuyez sur Entrée pour continuer...")
+                    continue
+                
+                orientation = 'horizontal' if orientation == 'H' else 'vertical'
+                ship.place(case_choisie, orientation)
+                
+                if ship.is_valid_placement(grille_joueur2, fleet_joueur2[:i]):
+                    placed = True
+                else:
+                    print("Placement invalide (hors grille ou chevauchement)")
+                    input("Appuyez sur Entrée pour continuer...")
+                    
+            except Exception as e:
+                print("Erreur : Veuillez réessayer.")
+                input("Appuyez sur Entrée pour continuer...")
+                
+    return True
+                
+# Cette fonction permet de valider si le choix du joueur est conforme ou non + de lui demander d'inscrire un numéro
+
+def place_ships_joueur():
+    
+    for i, ship in enumerate(fleet_joueur):
+        placed = False
+        while not placed:
+            try:
+                afficher_jeu_2()
+                print(f"Placement du {ship.name} ({ship.size} cases)")
+                print(f"Bateau {i+1}/5")
+                case_choisie = input(f"Choisissez la case de départ pour votre {ship.name} [A1-J10]: ")
+                
+                if case_choisie not in grille_joueur:
+                    print("Attention, veuillez insérer une case valide !")
+                    input("Appuyez sur Entrée pour continuer...")
+                    continue
+                
+                orientation = input("Orientation (H)orizontale ou (V)erticale: ").upper()
+                if orientation not in ['H', 'V']:
+                    print("Veuillez entrer H ou V")
+                    input("Appuyez sur Entrée pour continuer...")
+                    continue
+                
+                orientation = 'horizontal' if orientation == 'H' else 'vertical'
+                ship.place(case_choisie, orientation)
+                
+                if ship.is_valid_placement(grille_joueur, fleet_joueur[:i]):
                     placed = True
                 else:
                     print("Placement invalide (hors grille ou chevauchement)")
@@ -213,86 +288,13 @@ def place_ships_robot():
     
     return True
         
-
-def place_ships_joueur2():
-    
-    for i, ship in enumerate(fleet_joueur1):
-        placed = False
-        while not placed:
-            try:
-                afficher_jeu()
-                print(f"Placement du {ship.name} ({ship.size} cases)")
-                print(f"Bateau {i+1}/5")
-                case_choisie = input(f"Joueur 2, choisissez la case de départ pour votre {ship.name} [A1-J10]: ")
-                
-                if case_choisie not in grille_joueur2:
-                    print("Attention, veuillez insérer une case valide !")
-                    input("Appuyez sur Entrée pour continuer...")
-                    continue
-                
-                orientation = input("Orientation (H)orizontale ou (V)erticale: ").upper()
-                if orientation not in ['H', 'V']:
-                    print("Veuillez entrer H ou V")
-                    input("Appuyez sur Entrée pour continuer...")
-                    continue
-                
-                orientation = 'horizontal' if orientation == 'H' else 'vertical'
-                ship.place(case_choisie, orientation)
-                
-                if ship.is_valid_placement(grille_joueur2, fleet_joueur2[:i]):
-                    placed = True
-                else:
-                    print("Placement invalide (hors grille ou chevauchement)")
-                    input("Appuyez sur Entrée pour continuer...")
-                    
-            except Exception as e:
-                print("Erreur : Veuillez réessayer.")
-                input("Appuyez sur Entrée pour continuer...")
-# Cette fonction permet de valider si le choix du joueur est conforme ou non + de lui demander d'inscrire un numéro
-
-def place_ships_joueur():
-    
-    for i, ship in enumerate(fleet_joueur):
-        placed = False
-        while not placed:
-            try:
-                afficher_jeu()
-                print(f"Placement du {ship.name} ({ship.size} cases)")
-                print(f"Bateau {i+1}/5")
-                case_choisie = input(f"Choisissez la case de départ pour votre {ship.name} [A1-J10]: ")
-                
-                if case_choisie not in grille_joueur:
-                    print("Attention, veuillez insérer une case valide !")
-                    input("Appuyez sur Entrée pour continuer...")
-                    continue
-                
-                orientation = input("Orientation (H)orizontale ou (V)erticale: ").upper()
-                if orientation not in ['H', 'V']:
-                    print("Veuillez entrer H ou V")
-                    input("Appuyez sur Entrée pour continuer...")
-                    continue
-                
-                orientation = 'horizontal' if orientation == 'H' else 'vertical'
-                ship.place(case_choisie, orientation)
-                
-                if ship.is_valid_placement(grille_joueur, fleet_joueur[:i]):
-                    placed = True
-                else:
-                    print("Placement invalide (hors grille ou chevauchement)")
-                    input("Appuyez sur Entrée pour continuer...")
-                    
-            except Exception as e:
-                print("Erreur : Veuillez réessayer.")
-                input("Appuyez sur Entrée pour continuer...")
-# Cette fonction permet de valider si le choix du joueur est conforme ou non + de lui demander d'inscrire un numéro
-        
     
 
 def joueur1_play():
 
     while True:
         try:
-            afficher_jeu()
+            afficher_jeu_1()
             choix = input(f"Joueur 1, choisissez sur quelle case votre missile va être lancé [A1-J10]: ")
             if choix in grille_joueur2:
                 if choix not in tirs_joueur1:
@@ -307,7 +309,7 @@ def joueur1_play():
                             break
                     
                     if touche:
-                        afficher_jeu()
+                        afficher_jeu_1()
                         print("Touché !")
                         if bateau_touche.is_sunk():
                             print(f"Le {bateau_touche.name} ennemi est coulé !")
@@ -320,7 +322,7 @@ def joueur1_play():
                             return False
                     else:
                         grille_joueur2.remove(choix)
-                        afficher_jeu()
+                        afficher_jeu_1()
                         print(f"Joueur 1 sur {choix}, c'est raté")
                         input("Appuyez sur Entrée pour continuer...")
                         return False
@@ -339,7 +341,7 @@ def joueur2_play():
 
     while True:
         try:
-            afficher_jeu()
+            afficher_jeu_1()
             choix = input(f"Joueur 2, choisissez sur quelle case votre missile va être lancé [A1-J10]: ")
             if choix in grille_joueur1:
                 if choix not in tirs_joueur2:
@@ -354,7 +356,7 @@ def joueur2_play():
                             break
                     
                     if touche:
-                        afficher_jeu()
+                        afficher_jeu_1()
                         print("Touché !")
                         if bateau_touche.is_sunk():
                             print(f"Le {bateau_touche.name} ennemi est coulé !")
@@ -367,7 +369,7 @@ def joueur2_play():
                             return False
                     else:
                         grille_joueur1.remove(choix)
-                        afficher_jeu()
+                        afficher_jeu_1()
                         print(f"Joueur sur {choix}, c'est raté")
                         input("Appuyez sur Entrée pour continuer...")
                         return False
@@ -386,7 +388,7 @@ def joueur_play():
 
     while True:
         try:
-            afficher_jeu()
+            afficher_jeu_2()
             choix = input(f"Joueur, choisissez sur quelle case votre missile va être lancé [A1-J10]: ")
             if choix in grille_robot:
                 if choix not in tirs_joueur:
@@ -401,7 +403,7 @@ def joueur_play():
                             break
                     
                     if touche:
-                        afficher_jeu()
+                        afficher_jeu_2()
                         print("Touché !")
                         if bateau_touche.is_sunk():
                             print(f"Le {bateau_touche.name} ennemi est coulé !")
@@ -414,7 +416,7 @@ def joueur_play():
                             return False
                     else:
                         grille_robot.remove(choix)
-                        afficher_jeu()
+                        afficher_jeu_2()
                         print(f"Joueur sur {choix}, c'est raté")
                         input("Appuyez sur Entrée pour continuer...")
                         return False
@@ -430,7 +432,7 @@ def joueur_play():
 # Cette fonction permet de valider l'entrée du joueur, si elle  est conforme ou non (int) + selon le choix soit = gagné --> fin , soit= raté --> jeu continue
 
 def robot_play():
-    afficher_jeu()
+    afficher_jeu_2()
     print("Le robot réfléchit...")
     input("Appuyez sur Entrée pour voir le choix du robot...")
     
@@ -448,7 +450,7 @@ def robot_play():
             break
     
     if touche:
-        afficher_jeu()
+        afficher_jeu_2()
         print("Touché !")
         if bateau_touche.is_sunk():
             print(f"Votre {bateau_touche.name} est coulé !")
@@ -461,7 +463,7 @@ def robot_play():
             return False
     else:
         grille_joueur.remove(choix)
-        afficher_jeu()
+        afficher_jeu_2()
         print(f"Robot a tiré sur {choix}, c'est raté")
         input("Appuyez sur Entrée pour continuer...")
         return False
@@ -480,21 +482,27 @@ def game_start_principal():
 
 def game_start_1():
     
-    
+    clear_console()
     afficher_jeu_1()
 
     # Placement des bateaux pour les deux joueurs
     print("Placement des bateaux du joueur 1:")
-    
-    
-    
-  
     place_ships_joueur1()
+    
+    
+    clear_console()
+    print("Placement des bateaux du joueur 2:")
     if not place_ships_joueur2():
         print("Erreur lors du placement des bateaux du joueur 2. Veuillez relancer le jeu.")
         exit()
 
-
+    clear_console()
+    
+    print("Les bateaux sont placés, la partie commence !")
+    input("Appuyez sur Entrée pour continuer...")
+    
+    
+    # Boucle de jeu
     while True:
         if turn % 2 == 0:
             winner = joueur1_play()
@@ -511,11 +519,27 @@ def game_start_1():
 
 def game_start_2():
     
-
+    clear_console()
+    afficher_jeu_2()    
+    
+    # Placement des bateaux pour le joueur et le robot
+    print("Placement des bateaux du joueur:")   
     place_ships_joueur()
+    
+    clear_console()
+    print("Placement des bateaux du robot:")          
     if not place_ships_robot():
         print("Erreur lors du placement des bateaux du robot. Veuillez relancer le jeu.")
         exit()
+        
+    # Placement des bateaux du robot
+    # Si le placement échoue, on affiche un message d'erreur et on quitte le jeu   
+    
+    clear_console()
+    print("Les bateaux sont placés, la partie commence !")
+    input("Appuyez sur Entrée pour continuer...")
+    
+    # Boucle de jeu
 
 
     while True:
